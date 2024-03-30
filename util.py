@@ -22,7 +22,7 @@ class OverlayWidget(QtWidgets.QWidget):
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        painter.setPen(QtGui.QPen(QtGui.QColor(255, 0, 0, 128), 3, QtCore.Qt.SolidLine))
+        painter.setPen(QtGui.QPen(QtGui.QColor(33, 213, 177, 128), 4, QtCore.Qt.SolidLine))
         for rect in self.rectangles:
             painter.drawRect(rect)
 
