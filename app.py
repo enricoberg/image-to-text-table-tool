@@ -6,12 +6,6 @@ from PIL import ImageGrab
 from tkinter import filedialog
 
 
-win32api.MessageBox(0, 'Please select the txt file where you want to save your results', '')
-root = tk.Tk()
-root.withdraw()
-output_path = filedialog.askopenfilename(filetypes=[("TXT Files", "*.txt")])
-with open(output_path, "w") as file:
-    file.write("")
 
 def replace_last_object(x0,y0,width,height):
     with open('rectangles_coordinates.json', 'r') as file:
@@ -25,6 +19,7 @@ def replace_last_object(x0,y0,width,height):
     with open('rectangles_coordinates.json', 'w') as file:
         json.dump(json_data, file, indent=4)
 
+#FUNCTION THAT GENERATES COORDINATES OF THE RECTANGLE DRAWN WITH THE MOUSE
 def track_mouse():
     with open('rectangles_coordinates.json', 'r') as file:
         json_data = json.load(file)
@@ -32,8 +27,7 @@ def track_mouse():
     with open('rectangles_coordinates.json', 'w') as file:
         json.dump(json_data, file, indent=4)
     previous_x, previous_y = pyautogui.position()
-    x0,y0 =pyautogui.position()
-    
+    x0,y0 =pyautogui.position()   
     
     while True:
         if not keyboard.is_pressed('ctrl+g'):
@@ -52,7 +46,7 @@ def track_mouse():
             previous_x, previous_y = current_x, current_y
             
 
-
+#ROUTER FUNCTION THAT HANDLES THE USER'S KEYBOARD INPUT 
 def on_key_event(event):
     if event.event_type == keyboard.KEY_DOWN and event.name == 'g' and keyboard.is_pressed('ctrl'):
         with open('rectangles_coordinates.json', 'r') as file:
@@ -66,12 +60,15 @@ def on_key_event(event):
                 window.update_rectangles()
     elif event.event_type == keyboard.KEY_DOWN and event.name == 'esc':       
         app.quit()
+    elif event.event_type == keyboard.KEY_DOWN and event.name == 'enter' and keyboard.is_pressed('ctrl'):
+        reset_rectangles()
     elif event.event_type == keyboard.KEY_DOWN and event.name == 'u' and keyboard.is_pressed('ctrl'):
         try:
             extract_images()
         except:
             win32api.MessageBox(0, 'Something unexpected happened converting image to text', 'Error' ,0x00001000)
 
+#CLEARS THE JSON FROM UNWANTED RECTANGLES
 def clean_json():
     with open("rectangles_coordinates.json", "r") as file:
         data = json.load(file)   
@@ -79,7 +76,15 @@ def clean_json():
     with open('rectangles_coordinates.json', 'w') as file:
         json.dump(filtered_objects, file)
 
+#RESETS THE RECTANGLES JSON FILE
+def reset_rectangles():
+    empty_json=[]
+    with open('rectangles_coordinates.json', 'w') as file:
+        json.dump(empty_json, file, indent=4)  
+    window.update_rectangles()
 
+
+#FUNCTION TO TAKE SNAPSHOTS IN SELECTED AREAS, CONVERT THEM TO TEXT AND SAVE THE RESULTS IN OUTPUT FILE
 def extract_images():   
     clean_json() 
     with open("rectangles_coordinates.json", "r") as file:
@@ -97,18 +102,29 @@ def extract_images():
         text+="\t"        
     with open(output_path, "w") as file:
         file.write(text)   
+
+#SHOW A PROMPT TO SELECT THE OUTPUT FILE (CSV OR TXT ARE ALLOWED)
+win32api.MessageBox(0, 'Please select the txt file where you want to save your results', '')
+root = tk.Tk()
+root.withdraw()
+output_path = filedialog.askopenfilename(filetypes=[("TXT Files", "*.txt"),("CSV", "*.csv")])
+with open(output_path, "w") as file:
+    file.write("")
+
+#RESET THE FILE WITH THE RECTANGLES COORDINATES
 data = []
 with open('rectangles_coordinates.json', 'w') as file:
     json.dump(data, file)
-
+#INITIALIZE THE APP
 app = QtWidgets.QApplication(sys.argv)
 window = OverlayWidget()
 window.show()       
 
-
+#SET THE LISTENERS FOR THE SHORTCUTS
 keyboard.on_press_key('g', on_key_event)
 keyboard.on_press_key('esc', on_key_event)
 keyboard.on_press_key('u', on_key_event)
+keyboard.on_press_key('enter', on_key_event)
 
 
 sys.exit(app.exec_())

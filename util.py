@@ -32,6 +32,7 @@ class OverlayWidget(QtWidgets.QWidget):
             data = json.load(file)
         for obj in data:
             self.add_rectangle(QtCore.QRect(obj["x"], obj["y"], obj["width"], obj["height"]))   
+        self.update()
 
 
 
